@@ -1,12 +1,12 @@
 package gkl.memegen;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.view.View;
@@ -18,18 +18,22 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-public class step1 extends AppCompatActivity
+public class step2 extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_step1);
+        setContentView(R.layout.activity_step2);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -50,56 +54,51 @@ public class step1 extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        Button b = (Button) findViewById(R.id.button);
-        b.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setType("image/*");
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Select Picture"), 111);
-                intent.getExtras();
-            }
-        });
-    }
-
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 111 && resultCode == Activity.RESULT_OK) {
-            if (data == null) {
-                System.err.print("Can't get image!");
-                return;
-            }
-             Uri uri = data.getData();
-       //     File imageFile = new File(getRealPathFromURI(uri));
-
-            openStep2(uri);
-
+        ImageView imageView = (ImageView) findViewById(R.id.imageView2);
+        Uri uri = (Uri)getIntent().getParcelableExtra("Image");
+        String str = uri.getPath();
+        InputStream imageStream = null;
+        try {
+            imageStream = getContentResolver().openInputStream(uri);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         }
-    }
+        Bitmap yourSelectedImage = BitmapFactory.decodeStream(imageStream);
 
-    private void openStep2(Uri imageFile) {
-        Intent intent = new Intent(this, step2.class);
-        intent.putExtra("Image", imageFile);
-        startActivity(intent);
-    }
+        TextView tv = new TextView(this);
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(yourSelectedImage.getHeight(),yourSelectedImage.getWidth());
+        tv.setLayoutParams(layoutParams);
+        tv.setText("It's our first meme");
+        tv.setTextColor(Color.WHITE);
+        tv.setBackgroundColor(Color.TRANSPARENT);
 
-    private String getRealPathFromURI(Uri contentURI) {
-        String result;
-        Cursor cursor = getContentResolver().query(contentURI, null, null, null, null);
-        if (cursor == null) {
-            result = contentURI.getPath();
-        } else {
-            cursor.moveToFirst();
-            int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
-            result = cursor.getString(idx);
-            cursor.close();
-        }
-        return result;
-    }
+        Bitmap testB;
 
+        testB = yourSelectedImage;//Bitmap.createBitmap(yourSelectedImage.getHeight(), yourSelectedImage.getWidth(), Bitmap.Config.ARGB_8888);
+
+        Bitmap mutableBitmap = testB.copy(Bitmap.Config.ARGB_8888, true);
+        Canvas c = new Canvas(mutableBitmap);
+        tv.layout(0, 0, yourSelectedImage.getHeight()*4, yourSelectedImage.getWidth()*4);
+        tv.draw(c);
+
+
+
+
+        Bitmap tempBitmap = Bitmap.createBitmap(testB.getWidth()*4, testB.getHeight()*4, Bitmap.Config.RGB_565);
+
+        Canvas tempCanvas = new Canvas(tempBitmap);
+
+        tempCanvas.drawBitmap(testB, 0, 0, null);
+        Bitmap scaled = Bitmap.createScaledBitmap(testB,testB.getWidth()*4, testB.getHeight()*4, true);
+        tempCanvas.drawBitmap(scaled, 0, 0, null);
+        tempCanvas.scale(4,4);
+        tv.draw(tempCanvas);
+
+        imageView.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
+
+
+        //imageView.setImageBitmap(yourSelectedImage);
+    }
 
     @Override
     public void onBackPressed() {
@@ -114,7 +113,7 @@ public class step1 extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.step2, menu);
         return true;
     }
 

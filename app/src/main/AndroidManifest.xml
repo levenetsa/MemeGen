@@ -23,6 +23,11 @@
             android:label="@string/title_activity_step1"
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
+        <activity
+            android:name=".step2"
+            android:label="@string/title_activity_step2"
+            android:theme="@style/AppTheme.NoActionBar" >
+        </activity>
     </application>
 
 </manifest>
